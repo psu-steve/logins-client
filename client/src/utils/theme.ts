@@ -1,0 +1,76 @@
+export const getThemeColors = (theme: "light" | "dark") => ({
+  light: {
+    background: "#f5f5f5",
+    card: "white",
+    text: "#333",
+    subtext: "#666",
+    border: "#eee",
+    button: "#dc3545",
+    buttonHover: "#c82333",
+    input: {
+      background: "white",
+      text: "#333",
+      border: "#ddd",
+    },
+    shadow: "rgba(0,0,0,0.1)",
+    toast: {
+      success: { background: "#4CAF50", text: "white" },
+      error: { background: "#dc3545", text: "white" },
+      info: { background: "#2196F3", text: "white" },
+    },
+    login: {
+      background: "white",
+      headerText: "#333",
+      dividerText: "#666",
+      socialButton: {
+        background: "white",
+        text: "#333",
+        border: "#ddd",
+        hover: "#f5f5f5",
+      },
+    },
+    spinner: {
+      primary: "#4CAF50",
+      secondary: "#2196F3",
+      light: "#ffffff",
+      track: "rgba(0, 0, 0, 0.1)",
+    },
+  },
+  dark: {
+    background: "#1a1a1a",
+    card: "#2d2d2d",
+    text: "#ffffff",
+    subtext: "#b3b3b3",
+    border: "#404040",
+    button: "#dc3545",
+    buttonHover: "#c82333",
+    input: {
+      background: "#2d2d2d",
+      text: "#ffffff",
+      border: "#404040",
+    },
+    shadow: "rgba(0,0,0,0.3)",
+    toast: {
+      success: { background: "#43A047", text: "white" },
+      error: { background: "#c82333", text: "white" },
+      info: { background: "#1E88E5", text: "white" },
+    },
+    login: {
+      background: "#2d2d2d",
+      headerText: "#ffffff",
+      dividerText: "#b3b3b3",
+      socialButton: {
+        background: "#404040",
+        text: "#ffffff",
+        border: "#505050",
+        hover: "#505050",
+      },
+    },
+    spinner: {
+      primary: "#43A047",
+      secondary: "#1E88E5",
+      light: "#ffffff",
+      track: "rgba(255, 255, 255, 0.2)",
+    },
+  },
+})[theme]; 

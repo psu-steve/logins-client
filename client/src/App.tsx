@@ -1,43 +1,61 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import { Login } from "./components/Login/Login";
-import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PrivacyPolicy from "./components/PrivacyPolicy/PrivacyPolicy";
 import DataDeletion from "./components/DataDeletion/DataDeletion";
+import { Home } from "./components/Home/Home";
+import { ThemeToggle } from "./components/ThemeToggle/ThemeToggle";
+import { useAuth } from "./context/AuthContext";
+import { useLocation } from "react-router-dom";
 
-// This will be your protected dashboard component
-const Dashboard = () => <div>Dashboard (Protected Route)</div>;
+// Protected Route component
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
+  console.log("Protected Route - isAuthenticated:", isAuthenticated); // Debug log
 
-function App() {
-  const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-
-  if (!googleClientId) {
-    throw new Error("Google Client ID is not defined");
+  // Don't redirect while checking auth status
+  if (isLoading) {
+    return <div>Loading...</div>; // Or your loading component
   }
 
+  if (!isAuthenticated) {
+    // Redirect to /login but save the attempted location
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return <>{children}</>;
+};
+
+function App() {
   return (
-    <GoogleOAuthProvider clientId={googleClientId}>
-      <AuthProvider>
+    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}>
+      <ThemeProvider>
         <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/data-deletion" element={<DataDeletion />} />
-          </Routes>
+          <AuthProvider>
+            <Routes>
+              <Route
+                path="/home"
+                element={
+                  <ProtectedRoute>
+                    <Home />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<Navigate to="/home" />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/data-deletion" element={<DataDeletion />} />
+            </Routes>
+            <ToastContainer position="top-right" />
+            <ThemeToggle />
+          </AuthProvider>
         </BrowserRouter>
-        <ToastContainer position="top-right" />
-      </AuthProvider>
+      </ThemeProvider>
     </GoogleOAuthProvider>
   );
 }
