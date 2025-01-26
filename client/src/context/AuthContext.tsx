@@ -25,6 +25,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const API_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://social-media-logins-api.vercel.app"
+    : "http://localhost:8000";
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,14 +38,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch("http://localhost:8000/auth/user", {
+        const response = await fetch(`${API_URL}/auth/user`, {
+          method: "GET",
           credentials: "include",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
         });
 
         if (response.ok) {
           const data = await response.json();
           setUser(data.user);
         } else {
+          console.log("Auth check failed:", response.status);
           setUser(null);
         }
       } catch (error) {
@@ -56,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch("http://localhost:8000/auth/logout", {
+      await fetch(`${API_URL}/auth/logout`, {
         method: "POST",
         credentials: "include",
       });
