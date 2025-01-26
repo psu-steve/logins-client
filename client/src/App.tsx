@@ -5,6 +5,8 @@ import { Login } from "./components/Login/Login";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import PrivacyPolicy from "./components/PrivacyPolicy/PrivacyPolicy";
+import DataDeletion from "./components/DataDeletion/DataDeletion";
 
 // This will be your protected dashboard component
 const Dashboard = () => <div>Dashboard (Protected Route)</div>;
@@ -30,6 +32,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/data-deletion" element={<DataDeletion />} />
           </Routes>
         </BrowserRouter>
         <ToastContainer position="top-right" />
