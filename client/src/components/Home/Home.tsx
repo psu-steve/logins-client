@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import { getThemeColors } from "../../utils/theme";
@@ -60,6 +60,13 @@ export function Home() {
             Account created: {new Date(user.createdAt).toLocaleDateString()}
           </p>
         </div>
+        <div className="flex flex-col">
+        <button onClick={() => navigate("/events")}>View Eventbrite Events</button>
+        <div className="mt-4">
+        <Link to="/passkeys" className="text-blue-500 hover:text-blue-700">
+          Manage Passkeys
+        </Link>
+      </div>
         <button
           onClick={handleLogout}
           style={{
@@ -74,6 +81,7 @@ export function Home() {
         >
           Logout
         </button>
+        </div>
       </div>
     </div>
   );
