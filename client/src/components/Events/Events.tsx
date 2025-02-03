@@ -22,7 +22,7 @@ export const Events: React.FC = () => {
     const fetchEvents = async () => {
       try {
         const response = await fetch(`${API_URL}/api/auth/events`, {
-          credentials: "include", 
+          credentials: "include",
         });
         if (!response.ok) {
           throw new Error("Failed to fetch events");

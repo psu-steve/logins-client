@@ -1,5 +1,6 @@
-import { useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import Button from "@mui/material/Button";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import { getThemeColors } from "../../utils/theme";
@@ -9,12 +10,39 @@ export function Home() {
   const { theme } = useTheme();
   const colors = getThemeColors(theme);
   const navigate = useNavigate();
+  const [sunset, setSunset] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!user) {
-      navigate("/login");
+  const fetchSunsetTime = useCallback(async (lat: number, lon: number) => {
+    console.log("Fetching sunset time for lat:", lat, "lon:", lon);
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/weather?lat=${lat}&lon=${lon}`);
+
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Weather Data:", data);
+
+      if (!data.sunset) {
+        throw new Error("Sunset time not found in response");
+      }
+
+      console.log("Sunset time from API:", data.sunset);
+      return data.sunset;
+    } catch (error) {
+      console.error("Error fetching sunset time:", error);
+      return null;
     }
-  }, [user, navigate]);
+  }, []);
+
+  const handleFetchSunset = async () => {
+    const lat = 40.7128; // New York Latitude
+    const lon = -74.006; // New York Longitude
+    const sunsetTime = await fetchSunsetTime(lat, lon);
+    setSunset(sunsetTime);
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -30,6 +58,8 @@ export function Home() {
         backgroundColor: colors.background,
         minHeight: "100vh",
         color: colors.text,
+        display: "flex",
+        justifyContent: "center",
       }}
     >
       <div
@@ -40,6 +70,8 @@ export function Home() {
           padding: "2rem",
           borderRadius: "8px",
           boxShadow: `0 2px 4px ${colors.shadow}`,
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <h1>Welcome, {user.name}!</h1>
@@ -56,31 +88,52 @@ export function Home() {
           />
           <p>Email: {user.email}</p>
           <p>Provider: {user.provider}</p>
-          <p>
-            Account created: {new Date(user.createdAt).toLocaleDateString()}
-          </p>
+          <p>Account created: {new Date(user.createdAt).toLocaleDateString()}</p>
+          <p>Sunset: {sunset || "Click the button to check sunset time"}</p>
         </div>
-        <div className="flex flex-col">
-        <button onClick={() => navigate("/events")}>View Eventbrite Events</button>
-        <div className="mt-4">
-        <Link to="/passkeys" className="text-blue-500 hover:text-blue-700">
-          Manage Passkeys
-        </Link>
-      </div>
-        <button
-          onClick={handleLogout}
+        <div
           style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "1rem",
             marginTop: "2rem",
-            padding: "0.5rem 1rem",
-            backgroundColor: colors.button,
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
           }}
         >
-          Logout
-        </button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleFetchSunset}
+          >
+            Check Sunset Time
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate("/events")}
+          >
+            View Eventbrite Events
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate("/passkeys")}
+          >
+            Manage Passkeys
+          </Button>
+          <button
+            onClick={handleLogout}
+            style={{
+              marginTop: "2rem",
+              padding: "0.5rem 1rem",
+              backgroundColor: colors.button,
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            Logout
+          </button>
         </div>
       </div>
     </div>
