@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
@@ -10,39 +10,73 @@ export function Home() {
   const { theme } = useTheme();
   const colors = getThemeColors(theme);
   const navigate = useNavigate();
-  const [sunset, setSunset] = useState<string | null>(null);
 
-  const fetchSunsetTime = useCallback(async (lat: number, lon: number) => {
-    console.log("Fetching sunset time for lat:", lat, "lon:", lon);
+  const [userSunset, setUserSunset] = useState<string | null>(null);
+  const [userCity, setUserCity] = useState<string | null>(null);
+  const [userTimezoneAbbr, setUserTimezoneAbbr] = useState<string | null>(null);
 
+  const [stateCollegeSunset, setStateCollegeSunset] = useState<string | null>(null);
+  const [stateCollegeCity, setStateCollegeCity] = useState<string | null>(null);
+  const [stateCollegeTimezoneAbbr, setStateCollegeTimezoneAbbr] = useState<string | null>(null);
+
+  const handleFetchSunset = async () => {
+    if (!navigator.geolocation) {
+      console.error("Geolocation is not supported by this browser.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        console.log("User granted location access:", lat, lon);
+
+        try {
+          const response = await fetch(`http://localhost:8000/api/weather?lat=${lat}&lon=${lon}`);
+          if (!response.ok) {
+            throw new Error(`API request failed with status ${response.status}`);
+          }
+          const data = await response.json();
+          console.log("User Location Weather Data:", data);
+          setUserSunset(data.sunset);
+          setUserCity(data.city);
+          setUserTimezoneAbbr(data.timezoneAbbr);
+        } catch (error) {
+          console.error("Error fetching sunset time:", error);
+          setUserSunset("Error retrieving sunset time");
+        }
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        alert("Please allow location access to get sunset time.");
+      }
+    );
+  };
+
+  // Fetch sunset time for PSU
+  const handleFetchStateCollegeSunset = async () => {
     try {
+      const lat = 40.7934;
+      const lon = -77.8600;
       const response = await fetch(`http://localhost:8000/api/weather?lat=${lat}&lon=${lon}`);
-
       if (!response.ok) {
         throw new Error(`API request failed with status ${response.status}`);
       }
-
       const data = await response.json();
-      console.log("Weather Data:", data);
-
-      if (!data.sunset) {
-        throw new Error("Sunset time not found in response");
-      }
-
-      console.log("Sunset time from API:", data.sunset);
-      return data.sunset;
+      console.log("State College Weather Data:", data);
+      setStateCollegeSunset(data.sunset);
+      setStateCollegeCity(data.city);
+      setStateCollegeTimezoneAbbr(data.timezoneAbbr);
     } catch (error) {
-      console.error("Error fetching sunset time:", error);
-      return null;
+      console.error("Error fetching State College sunset time:", error);
+      setStateCollegeSunset("Error retrieving sunset time");
     }
-  }, []);
-
-  const handleFetchSunset = async () => {
-    const lat = 40.7128; // New York Latitude
-    const lon = -74.006; // New York Longitude
-    const sunsetTime = await fetchSunsetTime(lat, lon);
-    setSunset(sunsetTime);
   };
+
+  // Automatically fetch the sunset for State College, PA when the component mounts
+  useEffect(() => {
+    handleFetchStateCollegeSunset();
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -89,7 +123,14 @@ export function Home() {
           <p>Email: {user.email}</p>
           <p>Provider: {user.provider}</p>
           <p>Account created: {new Date(user.createdAt).toLocaleDateString()}</p>
-          <p>Sunset: {sunset || "Click the button to check sunset time"}</p>
+            <p>
+              Sunset at PSU: {stateCollegeSunset} EST
+            </p>
+          {userSunset && userCity && (
+            <p>
+              Sunset for {userCity}: {userSunset}
+            </p>
+          )}
         </div>
         <div
           style={{
@@ -99,25 +140,13 @@ export function Home() {
             marginTop: "2rem",
           }}
         >
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleFetchSunset}
-          >
-            Check Sunset Time
+          <Button variant="contained" color="primary" onClick={handleFetchSunset}>
+            Check Sunset for My Location
           </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => navigate("/events")}
-          >
+          <Button variant="contained" color="primary" onClick={() => navigate("/events")}>
             View Eventbrite Events
           </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => navigate("/passkeys")}
-          >
+          <Button variant="contained" color="primary" onClick={() => navigate("/passkeys")}>
             Manage Passkeys
           </Button>
           <button
